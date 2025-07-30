@@ -4,14 +4,12 @@
 #include "SensorsData.h"  // ✅ Include global sensor struct
 #include "SensorHandler.h"
 #include "Globals.h"
+#include "Config.h"
+#include "SerialDebugger.h"
 
 WebServer server(80);
 WiFiServer telnetServer(23);
 WiFiClient telnetClient;
-
-const char* ap_ssid = "Vermi_Compost_1934";
-const char* mdnshost = "vermi1934";
-const char* DEVICE_ID = "1934";
 
 IPAddress local_IP(10, 0, 0, 1);
 IPAddress gateway(10, 0, 0, 1);
@@ -23,8 +21,8 @@ void handlePing() {
 
 void handleHandshake() {
     String json = "{\"device_id\": \"" + String(DEVICE_ID) +
-                  "\", \"device_mdns\": \"" + String(mdnshost) +
-                  "\", \"device_name\": \"" + String(ap_ssid) + "\"}";
+                  "\", \"device_mdns\": \"" + String(MDNS_HOST) +
+                  "\", \"device_name\": \"" + String(DEVICE_NAME) + "\"}";
     server.send(200, "application/json", json);
 }
 
@@ -37,7 +35,7 @@ void handleConnectToNetwork() {
     String ssid = server.arg("ssid");
     String password = server.arg("password");
 
-    Serial.printf("Connecting to WiFi SSID: %s\n", ssid.c_str());
+    Debug.printf("Connecting to WiFi SSID: %s\n", ssid.c_str());
     WiFi.mode(WIFI_AP_STA);
     WiFi.enableAP(true);
     WiFi.begin(ssid.c_str(), password.c_str());
@@ -45,26 +43,26 @@ void handleConnectToNetwork() {
     int retries = 0;
     while (WiFi.status() != WL_CONNECTED && retries < 20) {
         delay(500);
-        Serial.print(".");
+        Debug.print(".");
         retries++;
     }
-    Serial.println();
+    Debug.println("");
 
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("WiFi connected successfully.");
+        Debug.println("WiFi connected successfully.");
         preferences.begin("wifi", false);
         preferences.putString("ssid", ssid);
         preferences.putString("password", password);
         preferences.end();
         server.send(200, "text/plain", "success");
     } else {
-        Serial.println("WiFi connection failed.");
+        Debug.println("WiFi connection failed.");
         server.send(200, "text/plain", "failed");
     }
 }
 
 void handleConfirm() {
-    Serial.println("Disabling AP mode...");
+    Debug.println("Disabling AP mode...");
     WiFi.softAPdisconnect(true);
     server.send(200, "text/plain", "AP disabled");
 }
@@ -78,13 +76,13 @@ void handleResetWifi() {
     preferences.clear();
     preferences.end();
 
-    Serial.println("WiFi credentials cleared.");
+    Debug.println("WiFi credentials cleared.");
     WiFi.disconnect(true);
     delay(1000);
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP("Vermi_Compost_Reset");
-    Serial.println("AP restarted after reset.");
+    Debug.println("AP restarted after reset.");
     server.send(200, "text/plain", "WiFi credentials reset and AP re-enabled");
     ESP.restart();
 }
@@ -148,17 +146,17 @@ void connectWithSavedCredentials() {
     String saved_password = preferences.getString("password", "");
     preferences.end();
 
-    if (saved_ssid.length() > 0) {
+    if (saved_ssid.length() > 0 ) {
         WiFi.mode(WIFI_STA);
         WiFi.begin(saved_ssid.c_str(), saved_password.c_str());
 
         int retries = 0;
         while (WiFi.status() != WL_CONNECTED && retries < 20) {
             delay(500);
-            Serial.print(".");
+            Debug.print(".");
             retries++;
         }
-        Serial.println();
+        Debug.println("");
 
         if (WiFi.status() == WL_CONNECTED) {
             ArduinoOTA.setPassword("VermiDev1929");
@@ -168,11 +166,31 @@ void connectWithSavedCredentials() {
             return;
         }
     }
+    if(DEBUG_DEFAULT_WIFI){
+        WiFi.mode(WIFI_STA);
+        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
+        int retries = 0;
+        while (WiFi.status() != WL_CONNECTED && retries < 20) {
+            delay(500);
+            Debug.print(".");
+            retries++;
+        }
+        Debug.println("");
+
+        if (WiFi.status() == WL_CONNECTED) {
+            ArduinoOTA.setPassword("VermiDev1929");
+            ArduinoOTA.begin();
+            telnetServer.begin();
+            telnetServer.setNoDelay(true);
+            return;
+        }
+    }
     // Fallback to AP mode
+
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(local_IP, gateway, subnet);
-    WiFi.softAP(ap_ssid);
+    WiFi.softAP(DEVICE_NAME);
 }
 
 void setupWiFiAndServer() {
@@ -191,10 +209,10 @@ void setupWiFiAndServer() {
     server.on("/ping", HTTP_GET, handlePing);
     server.begin();
 
-    if (!MDNS.begin(mdnshost)) {
-        Serial.println("Error starting mDNS");
+    if (!MDNS.begin(MDNS_HOST)) {
+        Debug.println("Error starting mDNS");
     } else {
-        Serial.println("mDNS responder started: http://" + String(mdnshost) + ".local");
+        Debug.println("mDNS responder started: http://" + String(MDNS_HOST) + ".local");
     }
 }
 
@@ -206,7 +224,7 @@ void loopWiFiAndServer() {
             if (!telnetClient || !telnetClient.connected()) {
                 if (telnetClient) telnetClient.stop();
                 telnetClient = telnetServer.available();
-                Serial.println("New Telnet client");
+                Debug.println("New Telnet client");
             } else {
                 WiFiClient newClient = telnetServer.available();
                 newClient.println("Only one client allowed");

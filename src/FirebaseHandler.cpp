@@ -1,6 +1,7 @@
 #include "FirebaseHandler.h"
 #include "SensorsData.h"  // ✅ Include sensor struct
-
+#include "Config.h"
+#include "SerialDebugger.h"
 // Firebase global variables
 FirebaseApp app;
 RealtimeDatabase Database;
@@ -62,20 +63,20 @@ void firebaseLoop() {
 void uploadDataToFirebase(const SensorData &data) {
     if (!app.ready() || firebaseBusy) return;
     firebaseBusy = true;
-
-    Database.set<float>(async_client1, "/RealTimeData/1934/temp0", data.temp_val_1, processData, "RTDB_Float");
-    Database.set<float>(async_client1, "/RealTimeData/1934/temp1", data.temp_val_2, processData, "RTDB_Float");
-    Database.set<int>(async_client1, "/RealTimeData/1934/moisture1", data.moist_percent_1, processData, "RTDB_Int");
-    Database.set<int>(async_client1, "/RealTimeData/1934/moisture2", data.moist_percent_2, processData, "RTDB_Int");
-    Database.set<float>(async_client1, "/RealTimeData/1934/water_level", data.water_level, processData, "RTDB_Float");
+    Debug.println("Firebase: Sending realtime data");
+    Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/temp0").c_str(), data.temp_val_1, processData, "RTDB_Float");
+    Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/temp1").c_str(), data.temp_val_2, processData, "RTDB_Float");
+    Database.set<int>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/moisture1").c_str(), data.moist_percent_1, processData, "RTDB_Int");
+    Database.set<int>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/moisture2").c_str(), data.moist_percent_2, processData, "RTDB_Int");
+    Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/water_level").c_str(), data.water_level, processData, "RTDB_Float");
 }
 
 // ✅ Upload Record Data using SensorData
 void uploadRecordDataToFirebase(const String &date, const SensorData &data) {
     if (!app.ready() || firebaseBusy) return;
     firebaseBusy = true;
-
-    String basePath = "/RecordsData/1934/" + date + "/";
+    Debug.println("Firebase: Sending database value");
+    String basePath = "/RecordsData/"+ String(DEVICE_ID) +"/" + date + "/";
     Database.set<float>(async_client2, (basePath + "temp0").c_str(), data.temp_val_1, processData, "RTDB_Float");
     Database.set<float>(async_client2, (basePath + "temp1").c_str(), data.temp_val_2, processData, "RTDB_Float");
     Database.set<int>(async_client2, (basePath + "moisture1").c_str(), data.moist_percent_1, processData, "RTDB_Int");

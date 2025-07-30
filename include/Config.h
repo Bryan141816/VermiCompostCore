@@ -1,0 +1,41 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Device Info
+#define DEVICE_ID   "1934"
+#define DEVICE_NAME "Vermi_Compost_" DEVICE_ID
+#define MDNS_HOST   "vermi" DEVICE_ID
+
+// Firebase
+#define FIREBASE_API_KEY "your_api_key"
+#define FIREBASE_DB_URL "https://your-db.firebaseio.com/"
+#define EMAIL "example@gmail.com"
+#define PASSWORD "password"
+
+// Other Settings
+#define UPLOAD_INTERVAL 30000 // ms
+#define PUMP_DURATION 5000 // ms
+#define PUMP_COOLDOWN 30000 // ms
+#define DEBUG_MODE true
+
+
+// WiFi Credentials will only be used for debug mode
+#define USE_PREDEFINED_WIFI true
+#define WIFI_SSID "YourWiFi"
+#define WIFI_PASSWORD "YourPassword"
+
+//Disable features
+
+#define DISABLE_FIREBASE false
+#define DISABLE_WIFI_SERVER false
+#define DISABLE_PUMP false
+
+// Combined flags (will be used to make one conditions in code)
+// DON't change anything here
+#define DEBUG_DEFAULT_WIFI (USE_PREDEFINED_WIFI && DEBUG_MODE)
+#define DEBUG_FIREBASE (DISABLE_FIREBASE && DEBUG_MODE)
+#define DEBUG_WIFI_SERVER   (DISABLE_WIFI_SERVER && DEBUG_MODE)
+#define DEBUG_PUMP     (DISABLE_PUMP && DEBUG_MODE)
+
+
+#endif

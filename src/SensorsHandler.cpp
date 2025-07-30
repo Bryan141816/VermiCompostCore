@@ -3,6 +3,7 @@
 #include <DallasTemperature.h>
 #include "Globals.h"
 #include <Adafruit_ADS1X15.h>
+#include "SerialDebugger.h"
 
 Preferences preferences;
 // DS18B20 setup
@@ -56,6 +57,7 @@ void loadOrSetDefaults() {
   
   setUpComplete = preferences.getBool("setUpComplete", false);
 
+
   preferences.end();
 }
 void initSensors() {
@@ -91,6 +93,15 @@ void readSensors() {
     // Optionally, fill TDS and pH values when available
     g_sensorData.tds_val = getTDSValue(); // Placeholder
     g_sensorData.ph_val  = getPHValue(); // Placeholder
+
+    Debug.println("Sensor Readings:");
+    Debug.println("Temperature 1: "+ String(g_sensorData.temp_val_1));
+    Debug.println("Temperature 2: "+ String(g_sensorData.temp_val_2));
+    Debug.println("Moisture 1: "+ String(g_sensorData.moist_percent_1));
+    Debug.println("Moisture: "+ String(g_sensorData.moist_percent_2));
+    Debug.println("Water Level: "+ String(g_sensorData.water_level));
+    Debug.println("TDS Value: "+ String(g_sensorData.tds_val) +"ppm");
+    Debug.println("PH Value: "+ String(g_sensorData.ph_val));
 }
 int getMoistureVal(int PIN, int airVal, int waterVal){
     int rawVal = analogRead(PIN);

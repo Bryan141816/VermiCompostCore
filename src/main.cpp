@@ -2,40 +2,41 @@
 #include "WiFiServerHandler.h"
 #include "SensorHandler.h"
 #include "FirebaseHandler.h"
-
+#include "Config.h"
+#include "SerialDebugger.h"
 
 bool pumpActive = false;
 unsigned long pumpStartTime = 0;
 unsigned long lastPumpOffTime = 0;
 
-const unsigned long pumpDuration = 5000;
-const unsigned long pumpCooldown = 30000;
 unsigned long lastSensorRead = 0;
 const unsigned long sensorReadInterval = 1000;
-
 
 unsigned long lastUpload = 0;
 unsigned long lastSendTime = 0;
 
 const unsigned long uploadInterval = 60000;  
-const unsigned long sendInterval   = 5000;  
+const unsigned long sendInterval   = 5000;
 
 #define PUMP_RELAY 25
 
 void setup() {
-    Serial.begin(115200);
-    pinMode(PUMP_RELAY, OUTPUT);
-    digitalWrite(PUMP_RELAY, HIGH);
 
-      initFirebase(
-        "YOUR_API_KEY",
-        "YOUR_EMAIL",
-        "YOUR_PASSWORD",
-        "YOUR_DATABASE_URL"
-    );
+    Debug.begin(115200);
+
+    if(!DEBUG_PUMP){
+        pinMode(PUMP_RELAY, OUTPUT);
+        digitalWrite(PUMP_RELAY, HIGH);
+    }
+    #if !DEBUG_FIREBASE
+        initFirebase(FIREBASE_API_KEY, EMAIL, PASSWORD, FIREBASE_DB_URL);
+    #endif
 
     initSensors();
-    setupWiFiAndServer();
+
+    #if !DEBUG_WIFI_SERVER
+        setupWiFiAndServer();
+    #endif
 }
 String getUnixTimeString() {
   struct tm timeinfo;
@@ -65,33 +66,32 @@ void loop() {
         unsigned long currentTime = millis();
         String currentTimeStamp = getUnixTimeString(); 
 
-        if (app.ready()) {
+        if (app.ready() && !DEBUG_FIREBASE) {
             if (currentTime - lastUpload >= uploadInterval) {
                 lastUpload = currentTime;
-                // ✅ Upload record data using struct
                 uploadRecordDataToFirebase(currentTimeStamp, g_sensorData);
             }
             else if (currentTime - lastSendTime >= sendInterval) {
-                Serial.println("Timestamp: " + currentTimeStamp);
+
                 lastSendTime = currentTime;
-                // ✅ Upload real-time data using struct
                 uploadDataToFirebase(g_sensorData);
             }
         }
-        if (!pumpActive && (currentTime - lastPumpOffTime >= pumpCooldown)) {
-            if (avgTemp > 34 || avgMoist < 80) {
-                digitalWrite(PUMP_RELAY, LOW);
-                pumpStartTime = currentTime;
-                pumpActive = true;
-                Serial.println("Pump ON");
+        if(!DEBUG_PUMP){
+            if (!pumpActive && (currentTime - lastPumpOffTime >= PUMP_COOLDOWN)) {
+                if (avgTemp > 34 || avgMoist < 80) {
+                    digitalWrite(PUMP_RELAY, LOW);
+                    pumpStartTime = currentTime;
+                    pumpActive = true;
+                    Debug.println("Pump is active");
+                }
             }
-        }
-
-        if (pumpActive && (currentTime - pumpStartTime >= pumpDuration)) {
-            digitalWrite(PUMP_RELAY, HIGH);
-            pumpActive = false;
-            lastPumpOffTime = currentTime;
-            Serial.println("Pump OFF, cooldown started");
+            if (pumpActive && (currentTime - pumpStartTime >= PUMP_DURATION)) {
+                digitalWrite(PUMP_RELAY, HIGH);
+                pumpActive = false;
+                lastPumpOffTime = currentTime;
+                Debug.println("Pump is inactive");
+            }
         }
     }
 }
