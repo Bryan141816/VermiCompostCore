@@ -33,7 +33,7 @@ int valAir2 = 3018;
 int valWater2 = 1710;
 // float Tankempty = 10;
 // float TankFull = 3;
-bool setUpComplete = false;
+bool setUpComplete = true;
 // ✅ Define the global variable
 SensorData g_sensorData = {0};
 
@@ -77,11 +77,18 @@ void readSensors() {
     g_sensorData.temp_val_1 = NAN;
     g_sensorData.temp_val_2 = NAN;
 
-    DeviceAddress tempDeviceAddress;
-    if (sensors.getAddress(tempDeviceAddress, 0))
-        g_sensorData.temp_val_1 = sensors.getTempC(tempDeviceAddress);
-    if (sensors.getAddress(tempDeviceAddress, 1))
-        g_sensorData.temp_val_2 = sensors.getTempC(tempDeviceAddress);
+    DeviceAddress tempDevice1, tempDevice2;
+
+    if (sensors.getAddress(tempDevice1, 0))
+        g_sensorData.temp_val_1 = sensors.getTempC(tempDevice1);
+    else
+        g_sensorData.temp_val_1 = NAN;
+
+    if (sensors.getAddress(tempDevice2, 1))
+        g_sensorData.temp_val_2 = sensors.getTempC(tempDevice2);
+    else
+        g_sensorData.temp_val_2 = NAN;
+
 
     g_sensorData.moist_percent_1 = getMoistureVal(MOISTURE_SENSOR_1, valAir1, valWater1);
     g_sensorData.moist_percent_2 = getMoistureVal(MOISTURE_SENSOR_2, valAir2, valWater2);
@@ -105,7 +112,8 @@ void readSensors() {
 }
 int getMoistureVal(int PIN, int airVal, int waterVal){
     int rawVal = analogRead(PIN);
-    int percent = map(rawVal, airVal, waterVal, 100, 0);
+    Debug.println(String(PIN)+ " "+String(rawVal));
+    int percent = map(rawVal, waterVal, airVal, 100, 0);
     return constrain(percent, 0, 100);
 }
 int getWaterLevel(){

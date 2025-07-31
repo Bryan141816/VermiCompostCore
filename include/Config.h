@@ -7,10 +7,10 @@
 #define MDNS_HOST   "vermi" DEVICE_ID
 
 // Firebase
-#define FIREBASE_API_KEY "your_api_key"
-#define FIREBASE_DB_URL "https://your-db.firebaseio.com/"
-#define EMAIL "example@gmail.com"
-#define PASSWORD "password"
+#define FIREBASE_API_KEY "AIzaSyB9-EB5TZOP3JNg1dPt0466uFLe3xHQuM4"
+#define FIREBASE_DB_URL "https://vermicompost-bd9f5-default-rtdb.asia-southeast1.firebasedatabase.app/"
+#define EMAIL "dorisaligato2002@gmail.com"
+#define PASSWORD "099996985858"
 
 // Other Settings
 #define UPLOAD_INTERVAL 30000 // ms
@@ -21,8 +21,8 @@
 
 // WiFi Credentials will only be used for debug mode
 #define USE_PREDEFINED_WIFI true
-#define WIFI_SSID "YourWiFi"
-#define WIFI_PASSWORD "YourPassword"
+#define WIFI_SSID "TECNO CAMON 20 Pro 5G"
+#define WIFI_PASSWORD "pass@201418"
 
 //Disable features
 

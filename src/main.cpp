@@ -28,15 +28,15 @@ void setup() {
         pinMode(PUMP_RELAY, OUTPUT);
         digitalWrite(PUMP_RELAY, HIGH);
     }
+    #if !DEBUG_WIFI_SERVER
+        setupWiFiAndServer();
+    #endif
     #if !DEBUG_FIREBASE
         initFirebase(FIREBASE_API_KEY, EMAIL, PASSWORD, FIREBASE_DB_URL);
     #endif
 
     initSensors();
 
-    #if !DEBUG_WIFI_SERVER
-        setupWiFiAndServer();
-    #endif
 }
 String getUnixTimeString() {
   struct tm timeinfo;
@@ -65,7 +65,7 @@ void loop() {
         float avgMoist = (g_sensorData.moist_percent_1 + g_sensorData.moist_percent_2) / 2;
         unsigned long currentTime = millis();
         String currentTimeStamp = getUnixTimeString(); 
-
+        firebaseLoop();
         if (app.ready() && !DEBUG_FIREBASE) {
             if (currentTime - lastUpload >= uploadInterval) {
                 lastUpload = currentTime;

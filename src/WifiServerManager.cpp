@@ -169,6 +169,8 @@ void connectWithSavedCredentials() {
     if(DEBUG_DEFAULT_WIFI){
         WiFi.mode(WIFI_STA);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+        Debug.print("Connecting to WiFi SSID: ");
+        Debug.println(WIFI_SSID);
 
         int retries = 0;
         while (WiFi.status() != WL_CONNECTED && retries < 20) {
@@ -176,15 +178,17 @@ void connectWithSavedCredentials() {
             Debug.print(".");
             retries++;
         }
-        Debug.println("");
+
+        Debug.println(""); // newline
 
         if (WiFi.status() == WL_CONNECTED) {
-            ArduinoOTA.setPassword("VermiDev1929");
-            ArduinoOTA.begin();
-            telnetServer.begin();
-            telnetServer.setNoDelay(true);
+            Debug.println("✅ Connected to default WiFi!");
+            Debug.print("IP Address: ");
             return;
+        } else {
+            Debug.println("❌ Failed to connect to default WiFi.");
         }
+
     }
     // Fallback to AP mode
 
