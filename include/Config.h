@@ -21,8 +21,8 @@
 
 // WiFi Credentials will only be used for debug mode
 #define USE_PREDEFINED_WIFI true
-#define WIFI_SSID "TECNO CAMON 20 Pro 5G"
-#define WIFI_PASSWORD "pass@201418"
+#define WIFI_SSID "Antopina"
+#define WIFI_PASSWORD "AntopinaAlyza_042203"
 
 //Disable features
 

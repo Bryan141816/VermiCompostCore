@@ -80,14 +80,14 @@ void loop() {
         if(!DEBUG_PUMP){
             if (!pumpActive && (currentTime - lastPumpOffTime >= PUMP_COOLDOWN)) {
                 if (avgTemp > 34 || avgMoist < 80) {
-                    digitalWrite(PUMP_RELAY, LOW);
+                    digitalWrite(PUMP_RELAY, HIGH);
                     pumpStartTime = currentTime;
                     pumpActive = true;
                     Debug.println("Pump is active");
                 }
             }
             if (pumpActive && (currentTime - pumpStartTime >= PUMP_DURATION)) {
-                digitalWrite(PUMP_RELAY, HIGH);
+                digitalWrite(PUMP_RELAY, LOW);
                 pumpActive = false;
                 lastPumpOffTime = currentTime;
                 Debug.println("Pump is inactive");

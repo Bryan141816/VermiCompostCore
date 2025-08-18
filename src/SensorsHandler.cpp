@@ -6,8 +6,9 @@
 #include "SerialDebugger.h"
 
 Preferences preferences;
+
 // DS18B20 setup
-#define ONE_WIRE_BUS 13
+#define ONE_WIRE_BUS 14
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
@@ -31,97 +32,102 @@ int valAir1 = 3018;
 int valWater1 = 1710;
 int valAir2 = 3018;
 int valWater2 = 1710;
-// float Tankempty = 10;
-// float TankFull = 3;
 bool setUpComplete = true;
-// ✅ Define the global variable
+
 SensorData g_sensorData = {0};
-
-
 
 void loadOrSetDefaults() {
   preferences.begin("config", true);
 
-  // Load or initialize integer values
   valAir1 = preferences.getInt("valAir1", 3018);
-
   valWater1 = preferences.getInt("valWater1", 1710);
-
   valAir2 = preferences.getInt("valAir2", 3018);
-
   valWater2 = preferences.getInt("valWater2", 1710);
-
-//   Tankempty = preferences.getFloat("Tankempty", 10.0);
-
-//   TankFull = preferences.getFloat("TankFull", 3.0);
-  
   setUpComplete = preferences.getBool("setUpComplete", false);
-
 
   preferences.end();
 }
+
 void initSensors() {
-    pinMode(MOISTURE_SENSOR_1, INPUT);
-    pinMode(MOISTURE_SENSOR_2, INPUT);
-    pinMode(WATER_LEVEL, INPUT);
-    pinMode(TdsSensorPin, INPUT);
+  pinMode(MOISTURE_SENSOR_1, INPUT);
+  pinMode(MOISTURE_SENSOR_2, INPUT);
+  pinMode(WATER_LEVEL, INPUT);
+  pinMode(TdsSensorPin, INPUT);
 
-    sensors.begin();
-    ads.begin();
+  sensors.begin();
+  ads.begin();
+}
 
+void printAddress(DeviceAddress deviceAddress) {
+  for (uint8_t i = 0; i < 8; i++) {
+    if (deviceAddress[i] < 16) Debug.print("0");
+    Debug.print(String(deviceAddress[i]));
+  }
+  Debug.println("");
 }
 
 void readSensors() {
-    sensors.requestTemperatures();
+  // 🔍 Scan and print all OneWire devices
+  Debug.println("Scanning for OneWire devices...");
+  DeviceAddress deviceAddress;
+  int deviceCount = 0;
+  while (sensors.getAddress(deviceAddress, deviceCount)) {
+    Debug.print("Device ");
+    Debug.print(String(deviceCount));
+    Debug.print(": ");
+    printAddress(deviceAddress);
+    deviceCount++;
+  }
+  Debug.print("Total OneWire devices found: ");
+  Debug.println(String(deviceCount));
 
+  sensors.requestTemperatures();
+
+  g_sensorData.temp_val_1 = NAN;
+  g_sensorData.temp_val_2 = NAN;
+
+  DeviceAddress tempDevice1, tempDevice2;
+
+  if (sensors.getAddress(tempDevice1, 0))
+    g_sensorData.temp_val_1 = sensors.getTempC(tempDevice1);
+  else
     g_sensorData.temp_val_1 = NAN;
+
+  if (sensors.getAddress(tempDevice2, 1))
+    g_sensorData.temp_val_2 = sensors.getTempC(tempDevice2);
+  else
     g_sensorData.temp_val_2 = NAN;
 
-    DeviceAddress tempDevice1, tempDevice2;
+  g_sensorData.moist_percent_1 = getMoistureVal(MOISTURE_SENSOR_1, valAir1, valWater1);
+  g_sensorData.moist_percent_2 = getMoistureVal(MOISTURE_SENSOR_2, valAir2, valWater2);
 
-    if (sensors.getAddress(tempDevice1, 0))
-        g_sensorData.temp_val_1 = sensors.getTempC(tempDevice1);
-    else
-        g_sensorData.temp_val_1 = NAN;
+  g_sensorData.water_level = getWaterLevel();
+  g_sensorData.tds_val = getTDSValue();
+  g_sensorData.ph_val  = getPHValue();
 
-    if (sensors.getAddress(tempDevice2, 1))
-        g_sensorData.temp_val_2 = sensors.getTempC(tempDevice2);
-    else
-        g_sensorData.temp_val_2 = NAN;
-
-
-    g_sensorData.moist_percent_1 = getMoistureVal(MOISTURE_SENSOR_1, valAir1, valWater1);
-    g_sensorData.moist_percent_2 = getMoistureVal(MOISTURE_SENSOR_2, valAir2, valWater2);
-
-
-
-    g_sensorData.water_level = getWaterLevel();
-
-    // Optionally, fill TDS and pH values when available
-    g_sensorData.tds_val = getTDSValue(); // Placeholder
-    g_sensorData.ph_val  = getPHValue(); // Placeholder
-
-    Debug.println("Sensor Readings:");
-    Debug.println("Temperature 1: "+ String(g_sensorData.temp_val_1));
-    Debug.println("Temperature 2: "+ String(g_sensorData.temp_val_2));
-    Debug.println("Moisture 1: "+ String(g_sensorData.moist_percent_1));
-    Debug.println("Moisture: "+ String(g_sensorData.moist_percent_2));
-    Debug.println("Water Level: "+ String(g_sensorData.water_level));
-    Debug.println("TDS Value: "+ String(g_sensorData.tds_val) +"ppm");
-    Debug.println("PH Value: "+ String(g_sensorData.ph_val));
+  Debug.println("Sensor Readings:");
+  Debug.println("Temperature 1: " + String(g_sensorData.temp_val_1));
+  Debug.println("Temperature 2: " + String(g_sensorData.temp_val_2));
+  Debug.println("Moisture 1: " + String(g_sensorData.moist_percent_1));
+  Debug.println("Moisture 2: " + String(g_sensorData.moist_percent_2));
+  Debug.println("Water Level: " + String(g_sensorData.water_level));
+  Debug.println("TDS Value: " + String(g_sensorData.tds_val) + " ppm");
+  Debug.println("PH Value: " + String(g_sensorData.ph_val));
 }
-int getMoistureVal(int PIN, int airVal, int waterVal){
-    int rawVal = analogRead(PIN);
-    Debug.println(String(PIN)+ " "+String(rawVal));
-    int percent = map(rawVal, waterVal, airVal, 100, 0);
-    return constrain(percent, 0, 100);
-}
-int getWaterLevel(){
-    int water_level = analogRead(WATER_LEVEL);
-    int water_percent = map(water_level, 0, 2460, 0, 100);
-    return constrain(water_percent, 0, 100);
 
+int getMoistureVal(int PIN, int airVal, int waterVal) {
+  int rawVal = analogRead(PIN);
+  Debug.println(String(PIN) + " " + String(rawVal));
+  int percent = map(rawVal, waterVal, airVal, 100, 0);
+  return constrain(percent, 0, 100);
 }
+
+int getWaterLevel() {
+  int water_level = analogRead(WATER_LEVEL);
+  int water_percent = map(water_level, 0, 2460, 0, 100);
+  return constrain(water_percent, 0, 100);
+}
+
 float getTDSValue() {
   static unsigned long analogSampleTimepoint = millis();
   if (millis() - analogSampleTimepoint > 40U) {
