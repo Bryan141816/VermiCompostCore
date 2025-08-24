@@ -10,6 +10,7 @@ extern int valAir1 ;
 extern int valWater1 ;
 extern int valAir2 ;
 extern int valWater2 ;
+extern float ultra_distance_cm;
 // extern float Tankempty ;
 // extern float TankFull ;
 void initSensors();
@@ -19,5 +20,6 @@ int getWaterLevel();
 float getTDSValue();
 float getPHValue();
 int getMedianNum(int bArray[], int len);
+
 
 #endif

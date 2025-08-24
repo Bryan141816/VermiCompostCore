@@ -5,6 +5,9 @@
 #include "Config.h"
 #include "SerialDebugger.h"
 
+
+
+
 bool pumpActive = false;
 unsigned long pumpStartTime = 0;
 unsigned long lastPumpOffTime = 0;
@@ -60,7 +63,7 @@ void loop() {
     }
      
     // Use g_sensorData instead of separate variables
-    if (setUpComplete) {
+     if (setUpComplete) {
         float avgTemp = (g_sensorData.temp_val_1 + g_sensorData.temp_val_2) / 2;
         float avgMoist = (g_sensorData.moist_percent_1 + g_sensorData.moist_percent_2) / 2;
         unsigned long currentTime = millis();

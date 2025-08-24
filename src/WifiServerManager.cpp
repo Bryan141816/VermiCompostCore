@@ -60,6 +60,25 @@ void handleConnectToNetwork() {
         server.send(200, "text/plain", "failed");
     }
 }
+// 🔍 Function to scan and print available WiFi networks
+void printAvailableNetworks() {
+    Debug.println("🔍 Scanning for WiFi networks...");
+    int n = WiFi.scanNetworks();  // perform WiFi scan
+
+    if (n == 0) {
+        Debug.println("❌ No networks found.");
+    } else {
+        Debug.printf("✅ Found %d networks:\n", n);
+        for (int i = 0; i < n; i++) {
+            Debug.printf("%d: %s (%d dBm) %s\n", 
+                         i + 1,                        // index
+                         WiFi.SSID(i).c_str(),         // SSID
+                         WiFi.RSSI(i),                 // signal strength
+                         (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "open" : "encrypted");
+        }
+    }
+    Debug.println("-----------------------------");
+}
 
 void handleConfirm() {
     Debug.println("Disabling AP mode...");
@@ -199,7 +218,7 @@ void connectWithSavedCredentials() {
 
 void setupWiFiAndServer() {
     connectWithSavedCredentials();
-
+    
     if (WiFi.status() == WL_CONNECTED) {
         configTime(8 * 3600, 0, "pool.ntp.org", "time.nist.gov");
     }
