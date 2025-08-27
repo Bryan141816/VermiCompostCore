@@ -7,7 +7,7 @@
 
 Preferences preferences;
 // DS18B20 setup
-#define ONE_WIRE_BUS 13
+#define ONE_WIRE_BUS 14
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 

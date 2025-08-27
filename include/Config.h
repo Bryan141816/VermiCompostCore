@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // Device Info
-#define DEVICE_ID   "1934"
+#define DEVICE_ID   "4444"
 #define DEVICE_NAME "Vermi_Compost_" DEVICE_ID
 #define MDNS_HOST   "vermi" DEVICE_ID
 
@@ -21,8 +21,8 @@
 
 // WiFi Credentials will only be used for debug mode
 #define USE_PREDEFINED_WIFI true
-#define WIFI_SSID "TECNO CAMON 20 Pro 5G"
-#define WIFI_PASSWORD "pass@201418"
+#define WIFI_SSID "Doritos personal"
+#define WIFI_PASSWORD "mitchiegwapa"
 
 //Disable features
 
