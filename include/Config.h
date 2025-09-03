@@ -1,6 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-//test
+
 // Device Info
 #define DEVICE_ID   "4444"
 #define DEVICE_NAME "Vermi_Compost_" DEVICE_ID
