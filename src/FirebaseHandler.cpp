@@ -71,8 +71,6 @@ void uploadDataToFirebase(const SensorData &data) {
     Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/water_level").c_str(), data.water_level, processData, "RTDB_Float");
     Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/tds_val").c_str(), data.tds_val, processData, "RTDB_Float");
     Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/ph_level").c_str(), data.ph_val, processData, "RTDB_Float");
-    Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/ultra_distance_cm").c_str(), data.ultra_distance_cm, processData, "RTDB_Float");
-    Database.set<float>(async_client1, ("/RealTimeData/" + String(DEVICE_ID) + "/ultra_level_percent").c_str(), data.ultra_level_percent, processData, "RTDB_Float");
 }
 
 // ✅ Upload Record Data using SensorData
@@ -88,6 +86,4 @@ void uploadRecordDataToFirebase(const String &date, const SensorData &data) {
     Database.set<float>(async_client2, (basePath + "water_level").c_str(), data.water_level, processData, "RTDB_Float");
     Database.set<float>(async_client2, (basePath + "tds_val").c_str(), data.tds_val, processData, "RTDB_Float");
     Database.set<float>(async_client2, (basePath + "ph_val").c_str(), data.ph_val, processData, "RTDB_Float");
-    Database.set<float>(async_client2, (basePath + "ultra_distance_cm").c_str(), data.ultra_distance_cm, processData, "RTDB_Float");
-    Database.set<float>(async_client2, (basePath + "ultra_level_percent").c_str(), data.ultra_level_percent, processData, "RTDB_Float");
 }
