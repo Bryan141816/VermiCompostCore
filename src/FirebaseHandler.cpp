@@ -73,7 +73,7 @@ static void processData(AsyncResult &aResult) {
 
       // Identify our stream by UID (we set it to "pumpStream" when starting)
       const bool isPumpStream = (String(aResult.uid()) == "pumpStream");
-
+      Debug.println(String(isPumpStream));
       if (isPumpStream) {
         // For a leaf boolean stream, type is usually 4 (boolean)
         // Sometimes Firebase sends initial JSON (type 6) — handle both.
@@ -128,19 +128,21 @@ void initFirebase(const char* apiKey,
   Database.url(dbUrl);
 
   // Build the pump path using your DEVICE_ID from Config.h
-  g_pumpPath = String("/VermiBoxes/") + String(DEVICE_ID) + "/Control/isPump";
+  g_pumpPath = String("VermiBoxes/") + String(DEVICE_ID) + "/Control/isPump";
 
   // Prepare pump pin
   //pinMode(PUMP_PIN, OUTPUT);
   setPump(false); // default OFF on boot
 
+
   // Start the stream right away
-  startPumpListener();
+ 
 }
 
 // ===== Keep Firebase alive in loop() =====
 void firebaseLoop() {
   app.loop();
+   startPumpListener();
 }
 
 // ===== Explicitly start the isPump stream =====

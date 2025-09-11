@@ -138,7 +138,7 @@ void readSensors() {
   float reads[N];
   for (int i = 0; i < N; i++) {
     reads[i] = readUltrasonicDistanceCM();
-    Debug.println(String(reads[i]) + "cm");
+
     delay(20);
   }
   // simple insertion sort

@@ -66,8 +66,7 @@ void loop() {
         float avgMoist = (g_sensorData.moist_percent_1 + g_sensorData.moist_percent_2) / 2;
         unsigned long currentTime = millis();
         String currentTimeStamp = getUnixTimeString(); 
-        Debug.println(String(currentTime) + "Ms");
-        Debug.println(String(lastSendTime)+"ms");
+
         firebaseLoop();
         if (app.ready()) {
             if (currentTime - lastUpload >= uploadInterval) {
