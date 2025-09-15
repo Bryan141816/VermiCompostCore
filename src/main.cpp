@@ -70,12 +70,12 @@ void loop() {
         firebaseLoop();
         if (app.ready()) {
             if (currentTime - lastUpload >= uploadInterval) {
-                Debug.println("Calling firebase");
+                //Debug.println("Calling firebase");
                 lastUpload = currentTime;
                 uploadRecordDataToFirebase(currentTimeStamp, g_sensorData);
             }
             else if (currentTime - lastSendTime >= sendInterval) {
-                Debug.println("Calling firebase realtime");
+                //Debug.println("Calling firebase realtime");
                 lastSendTime = currentTime;
                 uploadDataToFirebase(g_sensorData);
             }
@@ -86,14 +86,14 @@ void loop() {
                     digitalWrite(PUMP_RELAY, HIGH);
                     pumpStartTime = currentTime;
                     pumpActive = true;
-                    Debug.println("Pump is active");
+                    // Debug.println("Pump is active");
                 }
             }
             if (pumpActive && (currentTime - pumpStartTime >= PUMP_DURATION)) {
                 digitalWrite(PUMP_RELAY, LOW);
                 pumpActive = false;
                 lastPumpOffTime = currentTime;
-                Debug.println("Pump is inactive");
+                // Debug.println("Pump is inactive");
             }
             
         }
