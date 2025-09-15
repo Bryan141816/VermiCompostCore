@@ -8,6 +8,10 @@
 #include "SerialDebugger.h"
 #include "PumpHandler.h"
 
+static bool     s_counting   = false;
+static uint32_t s_startMs    = 0;
+static uint32_t s_durationMs = 5000;
+static int      s_lastShown  = -1;
 // Provides the functions used in the examples. #include <ArduinoJson.h>
 // ===== Firebase globals =====
 FirebaseApp app;
@@ -28,8 +32,8 @@ static bool g_streamActive = false;
 
 // Forward
 static void processData(AsyncResult &aResult);
-
-
+void startCountdown(uint32_t ms);
+void countdownTick();
 // ===== Process all Firebase callbacks (writes + stream) =====
 static void processData(AsyncResult &aResult) {
   if (!aResult.isResult()) return;
@@ -90,6 +94,10 @@ static void processData(AsyncResult &aResult) {
     if (t == 4 /* bool */ || t == 1 /* int */) {
       const bool pumpState = RTDB.to<bool>();
       setPump(pumpState);
+      if(pumpState){
+
+        startCountdown(3000);
+      }
       Serial.printf("[pumpStream] isPump -> %s\n", pumpState ? "ON" : "OFF");
     } else if (t == 6 /* JSON */) {
       // If your stream path is a parent, you may get a JSON snapshot
@@ -98,6 +106,10 @@ static void processData(AsyncResult &aResult) {
       const bool foundFalse = (dataStr.indexOf("\"isPump\"") >= 0) && (dataStr.indexOf("false") >= 0);
       if (foundTrue || foundFalse) {
         setPump(foundTrue);
+        if(foundTrue){
+
+          startCountdown(3000);
+        }
         Serial.printf("[pumpStream] JSON isPump -> %s\n", foundTrue ? "ON" : "OFF");
       }
     }
@@ -140,7 +152,7 @@ void initFirebase(const char* apiKey,
 
   // Prepare pump pin
   //pinMode(PUMP_PIN, OUTPUT);
-  setPump(false); // default OFF on boot
+
 
 
   // Start the stream right away
@@ -151,6 +163,7 @@ void initFirebase(const char* apiKey,
 void firebaseLoop() {
   app.loop();
    startPumpListener();
+   countdownTick();
 }
 
 // ===== Explicitly start the isPump stream =====
@@ -213,9 +226,55 @@ void uploadRecordDataToFirebase(const String &date, const SensorData &data) {
   Database.set<float>(async_client1, (base + "ultra_distance_cm").c_str(), data.ultra_distance_cm, processData, "RTDB_Float");
   Database.set<float>(async_client1, (base + "ultra_level_percent").c_str(), data.ultra_level_percent, processData, "RTDB_Float");
 }
+void setIsPumpOff(){
+  if(!app.ready() || firebaseBusy) return;
+  firebaseBusy = true;
 
+  String base = "/Control/" + String(DEVICE_ID) ;
+  Serial.println(base);
+
+  Database.set<int>  (async_client1, (base + "/isPump").c_str(), 0, processData, "RTDB_Int");
+}
 
 
 bool getPumpState() {
   return g_pumpState;
+}
+
+
+void startCountdown(uint32_t ms) {
+  s_counting   = true;
+  s_startMs    = millis();
+  s_durationMs = ms;
+  s_lastShown  = -1;
+}
+
+bool countdownActive() { return s_counting; }
+
+void countdownTick() {
+  if (!s_counting) return;
+
+  uint32_t elapsed = millis() - s_startMs;
+
+  if (elapsed >= s_durationMs) {
+    if (s_lastShown != 0) Serial.println("0");
+    Serial.println("Go!");
+    s_counting = false;
+
+    // EXAMPLE: turn pump ON after countdown (optional)
+    // setPump(true);
+    
+    setPump(0);
+    setIsPumpOff();
+    return;
+  }
+
+  uint32_t remaining = s_durationMs - elapsed;
+  int seconds = (remaining + 999) / 1000;   // ceil to next second
+
+  if (seconds != s_lastShown) {
+    Serial.println(seconds);                // prints: 5, 4, 3, 2, 1
+    s_lastShown = seconds;
+  }
+
 }
