@@ -4,7 +4,7 @@
 #include "FirebaseHandler.h"
 #include "Config.h"
 #include "SerialDebugger.h"
-
+#include "PumpHandler.h"
 bool pumpActive = false;
 unsigned long pumpStartTime = 0;
 unsigned long lastPumpOffTime = 0;
@@ -18,16 +18,11 @@ unsigned long lastSendTime = 0;
 const unsigned long uploadInterval = 6000;  
 const unsigned long sendInterval   = 5000;
 
-#define PUMP_RELAY 25
 
 void setup() {
 
     Debug.begin(115200);
-
-    if(!DEBUG_PUMP){
-        pinMode(PUMP_RELAY, OUTPUT);
-        digitalWrite(PUMP_RELAY, HIGH);
-    }
+    initPump();
     #if !DEBUG_WIFI_SERVER
         setupWiFiAndServer();
     #endif
@@ -83,14 +78,14 @@ void loop() {
         if(!DEBUG_PUMP){
             if (!pumpActive && (currentTime - lastPumpOffTime >= PUMP_COOLDOWN)) {
                 if (avgTemp > 34 || avgMoist < 80) {
-                    digitalWrite(PUMP_RELAY, HIGH);
+                    // setPump(1);
                     pumpStartTime = currentTime;
                     pumpActive = true;
                     // Debug.println("Pump is active");
                 }
             }
             if (pumpActive && (currentTime - pumpStartTime >= PUMP_DURATION)) {
-                digitalWrite(PUMP_RELAY, LOW);
+                // setPump(0);
                 pumpActive = false;
                 lastPumpOffTime = currentTime;
                 // Debug.println("Pump is inactive");
@@ -100,3 +95,4 @@ void loop() {
     }
     
 }
+

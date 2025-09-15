@@ -5,7 +5,8 @@
 #include "FirebaseHandler.h" 
 #include "SensorsData.h" 
 #include "Config.h" 
-#include "SerialDebugger.h" 
+#include "SerialDebugger.h"
+#include "PumpHandler.h"
 
 // Provides the functions used in the examples. #include <ArduinoJson.h>
 // ===== Firebase globals =====
@@ -27,7 +28,7 @@ static bool g_streamActive = false;
 
 // Forward
 static void processData(AsyncResult &aResult);
-static void setPump(bool on);
+
 
 // ===== Process all Firebase callbacks (writes + stream) =====
 static void processData(AsyncResult &aResult) {
@@ -214,12 +215,6 @@ void uploadRecordDataToFirebase(const String &date, const SensorData &data) {
 }
 
 
-// ===== Helpers =====
-static void setPump(bool on) {
-  g_pumpState = on;
-  //digitalWrite(PUMP_PIN, on ? HIGH : LOW);
-  Debug.println("Pumping "+ String(g_pumpState));
-}
 
 bool getPumpState() {
   return g_pumpState;
