@@ -10,7 +10,8 @@ Preferences preferences;
 #define ONE_WIRE_BUS 14
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
-
+int distanceToLevelPercent(float cm);
+float readUltrasonicDistanceCM();
 // Pins
 #define MOISTURE_SENSOR_1 32
 #define MOISTURE_SENSOR_2 33
@@ -37,7 +38,10 @@ bool setUpComplete = true;
 // ✅ Define the global variable
 SensorData g_sensorData = {0};
 
-
+// 🔊 Ultrasonic pins
+#define ULTRA_TRIG_PIN     5
+#define ULTRA_ECHO_PIN     18
+#define ULTRA_TIMEOUT_US   30000UL
 
 void loadOrSetDefaults() {
   preferences.begin("config", true);
@@ -195,4 +199,34 @@ float getPHValue() {
   float pH_value = (voltage - voltage_pH4) / pH_step + pH4;
 
   return pH_value;
+}
+
+float readUltrasonicDistanceCM() {
+  // ensure clean trigger
+  digitalWrite(ULTRA_TRIG_PIN, LOW);
+  delayMicroseconds(3);
+  // 10µs pulse to trigger
+  digitalWrite(ULTRA_TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(ULTRA_TRIG_PIN, LOW);
+
+  // measure echo pulse width
+  unsigned long duration = pulseIn(ULTRA_ECHO_PIN, HIGH, ULTRA_TIMEOUT_US);
+  if (duration == 0) {
+    // timeout -> no echo; return a large number so % becomes 0
+    return ULTRA_EMPTY_CM + 100.0f;
+  }
+  // HC-SR04: distance (cm) = duration(µs) / 58.0
+  float cm = duration / 58.0f;
+  return cm;
+}
+
+int distanceToLevelPercent(float cm) {
+  // Map distance (empty..full) → 0..100%, then clamp
+  // When cm == ULTRA_FULL_CM → 100%
+  // When cm == ULTRA_EMPTY_CM → 0%
+  int percent = (int) roundf(
+      (ULTRA_EMPTY_CM - cm) * 100.0f / (ULTRA_EMPTY_CM - ULTRA_FULL_CM)
+  );
+  return constrain(percent, 0, 100);
 }
