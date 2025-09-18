@@ -15,7 +15,7 @@ const unsigned long sensorReadInterval = 1000;
 unsigned long lastUpload = 0;
 unsigned long lastSendTime = 0;
 
-const unsigned long uploadInterval = 6000;  
+const unsigned long uploadInterval = 60000;  
 const unsigned long sendInterval   = 5000;
 
 
@@ -54,16 +54,15 @@ void loop() {
         readSensors();
     }
      
-    
     // Use g_sensorData instead of separate variables
-    if (true) {
+    if (setUpComplete) {
         float avgTemp = (g_sensorData.temp_val_1 + g_sensorData.temp_val_2) / 2;
         float avgMoist = (g_sensorData.moist_percent_1 + g_sensorData.moist_percent_2) / 2;
         unsigned long currentTime = millis();
         String currentTimeStamp = getUnixTimeString(); 
 
         firebaseLoop();
-        if (app.ready()) {
+        if (app.ready() && !DEBUG_FIREBASE) {
             if (currentTime - lastUpload >= uploadInterval) {
                 //Debug.println("Calling firebase");
                 lastUpload = currentTime;
