@@ -12,6 +12,10 @@ extern int valAir2 ;
 extern int valWater2 ;
 // extern float Tankempty ;
 // extern float TankFull ;
+
+extern float ULTRA_EMPTY_CM;   // distance when TANK is EMPTY (far surface)
+extern float ULTRA_FULL_CM; 
+
 void initSensors();
 void readSensors();
 int getMoistureVal(int pin, int valAir, int valWater);
