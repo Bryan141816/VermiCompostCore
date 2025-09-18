@@ -156,15 +156,15 @@ void readSensors() {
   g_sensorData.tds_val = getTDSValue(); // Placeholder
   g_sensorData.ph_val  = getPHValue();  // Placeholder
 
-  // Debug.println("Sensor Readings:");
-  // Debug.println("Temperature 1: " + String(g_sensorData.temp_val_1));
-  // Debug.println("Temperature 2: " + String(g_sensorData.temp_val_2));
-  // Debug.println("Moisture 1: " + String(g_sensorData.moist_percent_1));
-  // Debug.println("Moisture: " + String(g_sensorData.moist_percent_2));
-  // Debug.println("Water Level: " + String(g_sensorData.water_level));
-  // Debug.println("US Distance:   " + String(g_sensorData.ultra_distance_cm) + " cm");
-  // Debug.println("TDS Value: " + String(g_sensorData.tds_val) + "ppm");
-  // Debug.println("PH Value: " + String(g_sensorData.ph_val));
+  Debug.println("Sensor Readings:");
+  Debug.println("Temperature 1: " + String(g_sensorData.temp_val_1));
+  Debug.println("Temperature 2: " + String(g_sensorData.temp_val_2));
+  Debug.println("Moisture 1: " + String(g_sensorData.moist_percent_1));
+  Debug.println("Moisture: " + String(g_sensorData.moist_percent_2));
+  Debug.println("Water Level: " + String(g_sensorData.water_level));
+  Debug.println("US Distance:   " + String(g_sensorData.ultra_distance_cm) + " cm");
+  Debug.println("TDS Value: " + String(g_sensorData.tds_val) + "ppm");
+  Debug.println("PH Value: " + String(g_sensorData.ph_val));
 }
 
 int getMoistureVal(int PIN, int airVal, int waterVal){
@@ -225,7 +225,7 @@ float getPHValue() {
   int16_t adc0 = ads.readADC_SingleEnded(0);
   float voltage = ads.computeVolts(adc0);
 
-  // Debug.println(String(voltage));
+  //Debug.println(String(voltage));
 
   float voltage_pH4 = 3.01;
   float voltage_pH6_86 = 2.60;

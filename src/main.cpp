@@ -78,17 +78,17 @@ void loop() {
         if(!DEBUG_PUMP){
             if (!pumpActive && (currentTime - lastPumpOffTime >= PUMP_COOLDOWN)) {
                 if (avgTemp > 34 || avgMoist < 80) {
-                    // setPump(1);
+                    setPump(1);
                     pumpStartTime = currentTime;
                     pumpActive = true;
-                    // Debug.println("Pump is active");
+                    Debug.println("Pump is active");
                 }
             }
             if (pumpActive && (currentTime - pumpStartTime >= PUMP_DURATION)) {
-                // setPump(0);
+                setPump(0);
                 pumpActive = false;
                 lastPumpOffTime = currentTime;
-                // Debug.println("Pump is inactive");
+                Debug.println("Pump is inactive");
             }
             
         }
