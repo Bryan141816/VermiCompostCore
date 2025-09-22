@@ -98,7 +98,7 @@ static void processData(AsyncResult &aResult) {
 
         startCountdown(3000);
       }
-      Serial.printf("[pumpStream] isPump -> %s\n", pumpState ? "ON" : "OFF");
+      //Serial.printf("[pumpStream] isPump -> %s\n", pumpState ? "ON" : "OFF");
     } else if (t == 6 /* JSON */) {
       // If your stream path is a parent, you may get a JSON snapshot
       // Example: { "isPump": true }
@@ -110,7 +110,7 @@ static void processData(AsyncResult &aResult) {
 
           startCountdown(3000);
         }
-        Serial.printf("[pumpStream] JSON isPump -> %s\n", foundTrue ? "ON" : "OFF");
+        // Serial.printf("[pumpStream] JSON isPump -> %s\n", foundTrue ? "ON" : "OFF");
       }
     }
 
@@ -173,14 +173,14 @@ void startPumpListener() {
 
   async_client2.setSSEFilters("get,put,patch,keep-alive,cancel,auth_revoked");
   // Use SSE/streaming mode so changes are pushed to the device
-  Serial.println(g_pumpPath.c_str());
+  // Serial.println(g_pumpPath.c_str());
   Database.get(async_client2,
                g_pumpPath.c_str(),
                processData,
                true /* SSE streaming */,
                "pumpStream");
   g_streamActive = true;
-  Serial.printf("Started pump listener at: %s\n", g_pumpPath.c_str());
+  // Serial.printf("Started pump listener at: %s\n", g_pumpPath.c_str());
 }
 
 // ===== Optional: stop the stream =====
@@ -231,7 +231,7 @@ void setIsPumpOff(){
   firebaseBusy = true;
 
   String base = "/Control/" + String(DEVICE_ID) ;
-  Serial.println(base);
+  //Serial.println(base);
 
   Database.set<int>  (async_client1, (base + "/isPump").c_str(), 0, processData, "RTDB_Int");
 }
@@ -258,7 +258,7 @@ void countdownTick() {
 
   if (elapsed >= s_durationMs) {
     if (s_lastShown != 0) Serial.println("0");
-    Serial.println("Go!");
+    //Serial.println("Go!");
     s_counting = false;
 
     // EXAMPLE: turn pump ON after countdown (optional)
@@ -273,7 +273,7 @@ void countdownTick() {
   int seconds = (remaining + 999) / 1000;   // ceil to next second
 
   if (seconds != s_lastShown) {
-    Serial.println(seconds);                // prints: 5, 4, 3, 2, 1
+    //Serial.println(seconds);                // prints: 5, 4, 3, 2, 1
     s_lastShown = seconds;
   }
 

@@ -41,7 +41,11 @@ SensorData g_sensorData = {0};
 // 🔊 Ultrasonic pins
 #define ULTRA_TRIG_PIN     5
 #define ULTRA_ECHO_PIN     18
-#define ULTRA_TIMEOUT_US   30000UL
+#define ULTRA_TIMEOUT_US   30000UL 
+
+
+float ULTRA_EMPTY_CM = 14.0f;  // distance at EMPTY (farther)
+float ULTRA_FULL_CM  = 4.0f;
 
 void loadOrSetDefaults() {
   preferences.begin("config", true);
@@ -76,22 +80,22 @@ void initSensors() {
 }
 
 void readSensors() {
-    sensors.requestTemperatures();
+  sensors.requestTemperatures();
 
+  g_sensorData.temp_val_1 = NAN;
+  g_sensorData.temp_val_2 = NAN;
+
+  DeviceAddress tempDevice1, tempDevice2;
+
+  if (sensors.getAddress(tempDevice1, 0))
+    g_sensorData.temp_val_1 = sensors.getTempC(tempDevice1);
+  else
     g_sensorData.temp_val_1 = NAN;
+
+  if (sensors.getAddress(tempDevice2, 1))
+    g_sensorData.temp_val_2 = sensors.getTempC(tempDevice2);
+  else
     g_sensorData.temp_val_2 = NAN;
-
-    DeviceAddress tempDevice1, tempDevice2;
-
-    if (sensors.getAddress(tempDevice1, 0))
-        g_sensorData.temp_val_1 = sensors.getTempC(tempDevice1);
-    else
-        g_sensorData.temp_val_1 = NAN;
-
-    if (sensors.getAddress(tempDevice2, 1))
-        g_sensorData.temp_val_2 = sensors.getTempC(tempDevice2);
-    else
-        g_sensorData.temp_val_2 = NAN;
 
   g_sensorData.moist_percent_1 = getMoistureVal(MOISTURE_SENSOR_1, valAir1, valWater1);
   g_sensorData.moist_percent_2 = getMoistureVal(MOISTURE_SENSOR_2, valAir2, valWater2);
@@ -118,18 +122,20 @@ void readSensors() {
   g_sensorData.ultra_distance_cm   = dist_cm;
   g_sensorData.ultra_level_percent = distanceToLevelPercent(dist_cm);
 
-    // Optionally, fill TDS and pH values when available
-    g_sensorData.tds_val = getTDSValue(); // Placeholder
-    g_sensorData.ph_val  = getPHValue(); // Placeholder
+  // Optionally, fill TDS and pH values when available
+  g_sensorData.tds_val = getTDSValue(); // Placeholder
+  g_sensorData.ph_val  = getPHValue();  // Placeholder
 
-    Debug.println("Sensor Readings:");
-    Debug.println("Temperature 1: "+ String(g_sensorData.temp_val_1));
-    Debug.println("Temperature 2: "+ String(g_sensorData.temp_val_2));
-    Debug.println("Moisture 1: "+ String(g_sensorData.moist_percent_1));
-    Debug.println("Moisture: "+ String(g_sensorData.moist_percent_2));
-    Debug.println("Water Level: "+ String(g_sensorData.water_level));
-    Debug.println("TDS Value: "+ String(g_sensorData.tds_val) +"ppm");
-    Debug.println("PH Value: "+ String(g_sensorData.ph_val));
+  Debug.println("Sensor Readings:");
+  Debug.println("Temperature 1: " + String(g_sensorData.temp_val_1));
+  Debug.println("Temperature 2: " + String(g_sensorData.temp_val_2));
+  Debug.println("Moisture 1: " + String(g_sensorData.moist_percent_1));
+  Debug.println("Moisture: " + String(g_sensorData.moist_percent_2));
+  Debug.println("Water Level: " + String(g_sensorData.water_level));
+  Debug.println("US Distance:   " + String(g_sensorData.ultra_distance_cm) + " cm");
+  Debug.println("US Level:   " + String(g_sensorData.ultra_level_percent) + " %");
+  Debug.println("TDS Value: " + String(g_sensorData.tds_val) + "ppm");
+  Debug.println("PH Value: " + String(g_sensorData.ph_val));
 }
 int getMoistureVal(int PIN, int airVal, int waterVal){
   int rawVal = analogRead(PIN);
@@ -158,16 +164,29 @@ float getTDSValue() {
     for (int i = 0; i < SCOUNT; i++) analogBufferTemp[i] = analogBuffer[i];
     float averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * VREF / 4095.0;
 
-    float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
-    float compensationVoltage = averageVoltage / compensationCoefficient;
+    // Print the voltage to the serial monitor
+    Serial.print("Average Voltage: ");
+    Serial.println(averageVoltage);
 
-    float tdsValue = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage
-                      - 255.86 * compensationVoltage * compensationVoltage
-                      + 857.39 * compensationVoltage) * 0.5;
+    // Calculate TDS in µS/cm based on voltage
+    // Linear interpolation: TDS = (TDS2 - TDS1) / (V2 - V1) * (V - V1) + TDS1
+    float V1 = 0.55; // Voltage at 84 µS/cm
+    float TDS1 = 84; // TDS at 0.55V
+    float V2 = 1.81; // Voltage at 1413 µS/cm
+    float TDS2 = 1413; // TDS at 1.81V
+
+    // Interpolation formula
+    float tdsValue = ((TDS2 - TDS1) / (V2 - V1)) * (averageVoltage - V1) + TDS1;
+
+    // Print the calculated TDS value to the serial monitor
+    //Serial.print("TDS in µS/cm: ");
+    //Serial.println(tdsValue);
+
     return tdsValue;
   }
   return 0;
 }
+
 
 int getMedianNum(int bArray[], int len) {
   int sorted[len];
@@ -185,22 +204,28 @@ int getMedianNum(int bArray[], int len) {
 }
 
 float getPHValue() {
-  int16_t adc0 = ads.readADC_SingleEnded(0);
-  float voltage = ads.computeVolts(adc0);
+  int16_t adc0 = ads.readADC_SingleEnded(0);  // Read the ADC value
+  float voltage = ads.computeVolts(adc0);    // Convert ADC to voltage
 
-  //Debug.println(String(voltage));
+  // Debug.println(String(voltage) + " V");
 
-  float voltage_pH4 = 3.01;
-  float voltage_pH6_86 = 2.60;
-  float pH4 = 4.01;
-  float pH6_86 = 6.86;
+  // Define reference voltages and pH values
+  float voltage_pH6_86 = 2.46;  // Voltage corresponding to pH 6.86
+  float voltage_pH9_18 = 2.20;  // Voltage corresponding to pH 9.18
+  float pH6_86 = 6.86;         // pH value for the first reference
+  float pH9_18 = 9.18;         // pH value for the second reference
 
-  float pH_step = (voltage_pH6_86 - voltage_pH4) / (pH6_86 - pH4);
-  float pH_value = (voltage - voltage_pH4) / pH_step + pH4;
+  // Calculate the slope (pH step) based on the two reference points
+  float pH_step = (voltage_pH9_18 - voltage_pH6_86) / (pH9_18 - pH6_86);
+  
+  // Calculate pH value based on the voltage reading
+  float pH_value = (voltage - voltage_pH6_86) / pH_step + pH6_86;
 
   return pH_value;
 }
 
+
+// ------------------ Ultrasonic implementation ------------------
 float readUltrasonicDistanceCM() {
   // ensure clean trigger
   digitalWrite(ULTRA_TRIG_PIN, LOW);
@@ -212,6 +237,7 @@ float readUltrasonicDistanceCM() {
 
   // measure echo pulse width
   unsigned long duration = pulseIn(ULTRA_ECHO_PIN, HIGH, ULTRA_TIMEOUT_US);
+  Serial.println(String(duration) +" echo");
   if (duration == 0) {
     // timeout -> no echo; return a large number so % becomes 0
     return ULTRA_EMPTY_CM + 100.0f;
@@ -219,6 +245,8 @@ float readUltrasonicDistanceCM() {
   // HC-SR04: distance (cm) = duration(µs) / 58.0
   float cm = duration / 58.0f;
   return cm;
+
+  //test
 }
 
 int distanceToLevelPercent(float cm) {
