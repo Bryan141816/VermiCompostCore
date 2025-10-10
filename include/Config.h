@@ -2,7 +2,8 @@
 #define CONFIG_H
 //test
 // Device Info
-#define DEVICE_ID   "4444"
+#define DEVICE_ID   "f7QpA9Xk"
+//#define DEVICE_ID   "2251813922518"
 #define DEVICE_NAME "Vermi_Compost_" DEVICE_ID
 #define MDNS_HOST   "vermi" DEVICE_ID
 
@@ -21,8 +22,8 @@
 
 // WiFi Credentials will only be used for debug mode
 #define USE_PREDEFINED_WIFI true
-#define WIFI_SSID "Doritos personal"
-#define WIFI_PASSWORD "mitchiegwapa"
+#define WIFI_SSID "LUKE"
+#define WIFI_PASSWORD "Antopina_042203"
 
 //Disable features
 
