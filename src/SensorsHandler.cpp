@@ -13,6 +13,9 @@ DallasTemperature sensors(&oneWire);
 int distanceToLevelPercent(float cm);
 float readUltrasonicDistanceCM();
 
+// ➕ Forward declaration so other files can link against it (add to .h if you want to call it elsewhere)
+int getAvgMoisture();
+
 // Pins
 #define MOISTURE_SENSOR_1 32
 #define MOISTURE_SENSOR_2 33
@@ -180,6 +183,10 @@ void readSensors() {
   g_sensorData.moist_percent_1 = getMoistureVal(MOISTURE_SENSOR_1, valAir1, valWater1);
   g_sensorData.moist_percent_2 = getMoistureVal(MOISTURE_SENSOR_2, valAir2, valWater2);
 
+  // ✅ (Optional) If you later add avg_moisture to SensorData, you can store it here:
+  // long sumM = (long)g_sensorData.moist_percent_1 + (long)g_sensorData.moist_percent_2;
+  // g_sensorData.avg_moisture = constrain((int)(sumM / 2), 0, 100);
+
   g_sensorData.water_level = getWaterLevel();
 
   // 🔊 Ultrasonic readings — take several reads, use median for stability
@@ -196,6 +203,7 @@ void readSensors() {
   Debug.println("Temperature 2: " + String(g_sensorData.temp_val_2));
   Debug.println("Moisture 1: "   + String(g_sensorData.moist_percent_1));
   Debug.println("Moisture 2: "   + String(g_sensorData.moist_percent_2));
+  Debug.println("Avg Moisture: " + String(getAvgMoisture())); // ✅ show averaged value
   Debug.println("Water Level: "  + String(g_sensorData.water_level));
   Debug.println("US Distance: "  + String(g_sensorData.ultra_distance_cm) + " cm");
   Debug.println("US Level: "     + String(g_sensorData.ultra_level_percent) + " %");
@@ -288,4 +296,14 @@ float getPHValue() {
   float pH_value = (avgVoltage - voltage_pH6_86) / pH_step + pH6_86;
 
   return pH_value;
+}
+
+// ======================= NEW: Averaged Moisture Helper =======================
+// Returns the average of moist_percent_1 and moist_percent_2 as 0..100 (clamped).
+int getAvgMoisture() {
+  long sum = (long)g_sensorData.moist_percent_1 + (long)g_sensorData.moist_percent_2;
+  int avg  = (int)(sum / 2);
+  if (avg < 0)   avg = 0;
+  if (avg > 100) avg = 100;
+  return avg;
 }

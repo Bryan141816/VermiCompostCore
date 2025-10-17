@@ -15,7 +15,7 @@
 
 // Other Settings
 #define UPLOAD_INTERVAL 30000 // ms
-#define PUMP_DURATION 5000 // ms
+#define PUMP_DURATION 10000 // ms
 #define PUMP_COOLDOWN 30000 // ms
 #define DEBUG_MODE true
 

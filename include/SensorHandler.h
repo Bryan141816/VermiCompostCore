@@ -19,6 +19,9 @@ extern float ULTRA_FULL_CM;
 void initSensors();
 void readSensors();
 int getMoistureVal(int pin, int valAir, int valWater);
+
+int getAvgMoisture();
+
 int getWaterLevel();
 float getTDSValue();
 float getPHValue();

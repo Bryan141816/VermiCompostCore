@@ -6,6 +6,7 @@ struct SensorData {
     float temp_val_2;
     int   moist_percent_1;
     int   moist_percent_2;
+    int   avg_moisture; 
     float water_level;
     float tds_val;
     float ph_val;

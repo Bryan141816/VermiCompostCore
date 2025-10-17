@@ -4,6 +4,9 @@
 #define ENABLE_USER_AUTH
 #define ENABLE_DATABASE
 
+#define FIREBASE_DEBUG_ENABLE 1
+#define FIREBASE_DEBUG_LEVEL 4
+
 #include <WiFiClientSecure.h>
 #include <FirebaseClient.h>
 #include "SensorsData.h"
