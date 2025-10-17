@@ -17,8 +17,39 @@ FirebaseApp app;
 RealtimeDatabase Database;
 bool firebaseBusy = false;
 
+class DebugClient : public WiFiClientSecure {
+public:
+    size_t write(const uint8_t *buf, size_t size) override {
+        Serial.print("[HTTP SEND] ");
+        Serial.write(buf, size); // raw bytes
+        Serial.println();
+        return WiFiClientSecure::write(buf, size);
+    }
+
+    int read(uint8_t *buf, size_t size) override {
+        int r = WiFiClientSecure::read(buf, size);
+        if (r > 0) {
+            // Copy to a static buffer to accumulate the full response
+            static String responseBuffer = "";
+
+            // Append new chunk
+            responseBuffer += String((const char*)buf, r);
+
+            // If the last character is a newline, print buffer and clear
+            if (responseBuffer.endsWith("\n")) {
+                Serial.print("[HTTP RECV] ");
+                Serial.println(responseBuffer);
+                responseBuffer = "";
+            }
+        }
+        return r;
+    }
+};
+
+
+
 // Two SSL clients & async clients (one for writes, one for stream)
-WiFiClientSecure ssl_client1, ssl_client2;
+DebugClient ssl_client1, ssl_client2;
 using AsyncClient = AsyncClientClass;
 AsyncClient async_client1(ssl_client1), async_client2(ssl_client2);
 

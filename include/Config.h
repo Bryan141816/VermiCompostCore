@@ -22,8 +22,8 @@
 
 // WiFi Credentials will only be used for debug mode
 #define USE_PREDEFINED_WIFI true
-#define WIFI_SSID "LUKE"
-#define WIFI_PASSWORD "Antopina_042203"
+#define WIFI_SSID "PLDTHOMEFIBR306c8"
+#define WIFI_PASSWORD "PLDTWIFI4hxdb"
 
 //Disable features
 
